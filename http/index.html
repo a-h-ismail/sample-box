@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Admin login</title>
+</head>
+<body>
+<h1>Admin dashboard</h1><br>
+The page is still a work in progress.<br>
+<h2>Profile photo</h2>
+<img src="../uploads/profile.png"><br>
+Change image
+<form method="post" enctype="multipart/form-data" action="img_upload.cgi">
+  <label for="file">File</label>
+  <input id="file" name="file" type="file"><br>
+  <button>Upload</button><br>
+</form>
+<h2>Query user ID</h2>
+<form action=login.cgi>
+  <label for="username">Username</label><br>
+  <input type="text" name="username"><br>
+  <label for="password">Password</label><br>
+  <input type="text" name="password"><br>
+  <input type="submit" value="login">
+  </form>'
+</body>
+
+</html>
