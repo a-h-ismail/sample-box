@@ -43,10 +43,11 @@ echo "$DOMAIN" | grep '[&|$()`]' &> /dev/null
 if [ $? -eq 0 ]; then
 	echo 'Ok you win, take these and leave me alone...<br>
 	<strong>Flag: Command injection, done? (20 pts?)</strong><br>
-	Cookie goes here.'
+	I hope you like cookies, may be useful here somewhere :)<br>
+	Cookie: auth_token=5d6071b8e93644c987409f07937ed873'
 	exit
 fi
 
-# We're good to go finally
+# No command injection was attempted, finally!
 RESULT=`nslookup "$DOMAIN"`
 echo '<div style="white-space:pre-wrap;">' "$RESULT" '</div>'
