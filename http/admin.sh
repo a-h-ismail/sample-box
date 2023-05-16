@@ -23,7 +23,7 @@ else
 
 		if [ -n "$RESULT" ]; then
 			AUTHENTICATED="yes"
-			echo -e 'Set-Cookie:auth-token=5d6071b8e93644c987409f07937ed873; max-age=86400;\n'
+			echo -e 'Set-Cookie:auth-token=5d6071b8e93644c987409f07937ed873; max-age=86400;'
 		fi
     fi
 fi
@@ -56,5 +56,5 @@ if [ "$AUTHENTICATED" = "yes" ]; then
 		fi
 	fi
 else
-	echo `env`
+	echo "Access denied."
 fi
