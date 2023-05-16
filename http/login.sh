@@ -4,19 +4,20 @@
 function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
 # Tell apache that we are writing html here
-echo "Content-type: text/html"
+echo -e "Content-type: text/html\n"
 
 echo '<html>'
 echo '<head>'
-echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
-echo '<title>Test SQL query</title>'
+echo '<title>Login page</title>'
 echo '</head>
 <body>
-<h1>Simple form query using GET method</h1>
-<form action=login.cgi>
+<h1>Enter your credentials</h1>
+<form action=admin.sh method="post">
 <label for="username">Username</label><br>
 <input type="text" name="username"><br>
 <label for="password">Password</label><br>
 <input type="text" name="password"><br>
 <input type="submit" value="login">
-</form>'
+</form>
+</body>
+</html>'
