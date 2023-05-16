@@ -23,7 +23,7 @@ else
 
 		if [ -n "$RESULT" ]; then
 			AUTHENTICATED="yes"
-			echo -e 'Set-Cookie:auth-token=5d6071b8e93644c987409f07937ed873; max-age=86400;'
+			echo -e 'Set-Cookie:auth-token=5d6071b8e93644c987409f07937ed873; max-age=86400;\n'
 		fi
     fi
 fi
@@ -38,14 +38,6 @@ if [ "$AUTHENTICATED" = "yes" ]; then
 	echo '<body>
 	<h1>Admin dashboard</h1><br>
 	The page is still a work in progress.<br>
-	<h2>Profile photo</h2>
-	<img src="../uploads/profile.png"><br>
-	Change image
-	<form method="post" enctype="multipart/form-data" action="img_upload.sh">
-	<label for="file">File</label>
-	<input id="file" name="file" type="file"><br>
-	<button>Upload</button><br>
-	</form>
 
 	<h2>Query user ID</h2>
 	<form action=admin.sh>
@@ -53,12 +45,14 @@ if [ "$AUTHENTICATED" = "yes" ]; then
 	<input type="text" name="id"><br>
 	<input type="submit" value="Go!">
 	</form>'
-	if [ $REQUEST_METHOD = "GET" ]; then
+
+	# Sending the query using GET (POST is already used for authentication)
+	if [ "$REQUEST_METHOD" = "GET" ]; then
 		QUERY_STRING=`urldecode $QUERY_STRING`
 		ID=`echo "$QUERY_STRING" | grep -w 'id' | cut -f 2 -d =`
 		if [ -n "$ID" ]; then
-			RESULT=`/usr/bin/mysql -h localhost -u web_user -e "USE web_service; SELECT * FROM creds WHERE ID = $ID;"`
-			echo '<div style="white-space:pre-wrap;">' "$RESULT" '</div>'
+			RESULT=`/usr/bin/mysql -t -h localhost -u web_user -e "USE web_service; SELECT * FROM creds WHERE ID = $ID;"`
+			echo -e "<div style='white-space:pre-wrap;'><tt>\n$RESULT\n</tt></div>"
 		fi
 	fi
 else
