@@ -3,27 +3,28 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Admin login</title>
+  <title>CCFE web service</title>
 </head>
+
 <body>
-<h1>Admin dashboard</h1><br>
-The page is still a work in progress.<br>
-<h2>Profile photo</h2>
-<img src="../uploads/profile.png"><br>
-Change image
-<form method="post" enctype="multipart/form-data" action="img_upload.cgi">
-  <label for="file">File</label>
-  <input id="file" name="file" type="file"><br>
-  <button>Upload</button><br>
-</form>
-<h2>Query user ID</h2>
-<form action=login.cgi>
-  <label for="username">Username</label><br>
-  <input type="text" name="username"><br>
-  <label for="password">Password</label><br>
-  <input type="text" name="password"><br>
-  <input type="submit" value="login">
-  </form>'
+  <h1>Homepage</h1>
+  Our Cloud tools use the latest and greatest technologies to provide you with critical network services.<br>
+  Also, our site is minimalist and extremely fast (who needs frontend devs with their fancy CSS?).
+  <h2>Our services</h2>
+  <a href="cgi-bin/ping.sh">Latency meter</a><br>
+  <a href="cgi-bin/nslookup.sh">DNS resolver using our infrastructure</a>*
+  <!--If you are stuck, dirb is your friend :)-->
+  <h2>Planned services</h2>
+  <ul>
+    <li>SSH relay server</li>
+    <li>Secure VPN</li>
+    <li>/dev/random as a service</li>
+    <li>And much more!</li>
+  </ul>
+  <h1>Available job positions</h1>
+  <h2>Entropy generator</h2>
+  Role: Type <strong>random</strong> nonsense onto the keyboard, move the mouse <strong>randomly</strong> all day.<br>
+  Should be unpredictable so we could seed our random number generator and make it more random.
 </body>
 
 </html>
