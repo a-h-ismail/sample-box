@@ -12,7 +12,7 @@ echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
 echo '<title>DNS query service</title>'
 echo '</head>'
 echo '<body>
-<h1>Give me the domain or get out</h1>'
+<h1>DNS lookup service</h1>'
 echo "<form action=nslookup.sh>"
 echo '<label for="domain">Domain name</label><br>
 <input type="text" name="domain"><br>
@@ -42,9 +42,11 @@ fi
 echo "$DOMAIN" | grep '[&|$()`]' &> /dev/null
 if [ $? -eq 0 ]; then
 	echo 'Ok you win, take these and leave me alone...<br>
-	<strong>Flag: Command injection, done? (20 pts?)</strong><br>
+	<strong>Flag: Command injection attempted. (20 pts)</strong><br>
 	I hope you like cookies, may be useful here somewhere :)<br>
-	Cookie: auth_token=5d6071b8e93644c987409f07937ed873'
+	Cookie: auth-token=5d6071b8e93644c987409f07937ed873
+	<!--BurpSuite will be helpful to modify HTTP requests in a way--!>
+	'
 	exit
 fi
 
