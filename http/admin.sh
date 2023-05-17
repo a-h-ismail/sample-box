@@ -55,13 +55,16 @@ if [ "$AUTHENTICATED" = "yes" ]; then
 		ID=`echo "$QUERY_STRING" | grep -w 'id' | cut -f 2 -d =`
 		if [ -n "$ID" ]; then
 			RESULT=`/usr/bin/mysql -t -h localhost -u web_user -e "USE web_service; SELECT * FROM creds WHERE ID = $ID;"`
-			echo -e "<div style='white-space:pre-wrap;'><tt>\n$RESULT\n</tt></div>"
+			if [ -n "$RESULT" ]; then
+				echo -e "<div style='white-space:pre-wrap;'><tt>\n$RESULT\n</tt></div>"
+			else
+				echo -e "<div style='white-space:pre-wrap;'><tt>\nID doesn't match any user\n</tt></div>"
+			fi
 		fi
 	fi
 else
 	echo '<meta http-equiv="refresh" content="3; URL=./login.sh" ></head>
 	<body>Access denied. try again...<br>
 	Redirecting in 3 seconds.</body>
-	</html>
-	'
+	</html>'
 fi
