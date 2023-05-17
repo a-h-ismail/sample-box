@@ -1,0 +1,3 @@
+The admin is hiding some pages:
+cgi-bin/login.sh
+cgi-bin/admin.sh
