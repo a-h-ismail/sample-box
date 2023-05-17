@@ -16,14 +16,17 @@ else
         
 		# format: username=...&password=...
 		# The first cut isolates the query parameter, grep makes sure we are getting the expected parameter, the last cut gets the value
-		USERNAME=`echo $QUERY | cut -f 1 -d \& | grep -w 'username' | cut -f 2 -d =`
-		PASS=`echo $QUERY | cut -f 2 -d \& | grep -w 'password' | cut -f 2 -d =`
+		# tr removes the trailing newline as it is messing the base64 encoding
+		# Encoding in base64 is an effective mitigation for SQL injection
+		USERNAME=`echo $QUERY | cut -f 1 -d \& | grep -w 'username' | cut -f 2 -d = | tr -d '\n' | base64`
+		PASS=`echo $QUERY | cut -f 2 -d \& | grep -w 'password' | cut -f 2 -d = | tr -d '\n' | base64`
 
-		RESULT=`/usr/bin/mysql -h localhost -u web_user -e "USE web_service; SELECT username FROM creds WHERE username IN ( '$USERNAME' ) AND password IN ( '$PASS' ) LIMIT 1;"`
+		RESULT=`/usr/bin/mysql -h localhost -u web_user -e "USE web_service;
+		SELECT username FROM creds WHERE username IN ( FROM_BASE64('$USERNAME') ) AND password IN ( FROM_BASE64('$PASS') ) LIMIT 1;"`
 
 		if [ -n "$RESULT" ]; then
 			AUTHENTICATED="yes"
-			echo -e 'Set-Cookie:auth-token=5d6071b8e93644c987409f07937ed873; max-age=86400;'
+			echo 'Set-Cookie:auth-token=5d6071b8e93644c987409f07937ed873; max-age=86400;'
 		fi
     fi
 fi
@@ -32,11 +35,11 @@ echo -e "Content-type: text/html\n"
 echo '<html>'
 echo '<head>'
 echo '<title>Administration page</title>'
-echo '</head>'
 
 if [ "$AUTHENTICATED" = "yes" ]; then
-	echo '<body>
-	<h1>Admin dashboard</h1><br>
+	echo '</head>
+	<body>
+	<h1>Admin dashboard</h1>
 	The page is still a work in progress.<br>
 
 	<h2>Query user ID</h2>
@@ -56,5 +59,9 @@ if [ "$AUTHENTICATED" = "yes" ]; then
 		fi
 	fi
 else
-	echo "Access denied."
+	echo '<meta http-equiv="refresh" content="3; URL=./login.sh" ></head>
+	<body>Access denied. try again...<br>
+	Redirecting in 3 seconds.</body>
+	</html>
+	'
 fi
