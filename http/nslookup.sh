@@ -42,7 +42,7 @@ fi
 echo "$DOMAIN" | grep '[&|$()`]' &> /dev/null
 if [ $? -eq 0 ]; then
 	echo 'Ok you win, take these and leave me alone...<br>
-	<strong>Flag: Command injection attempted. (20 pts)</strong><br>
+	<strong>Flag: Command injection attempted - 20 points</strong><br>
 	I hope you like cookies, may be useful here somewhere :)<br>
 	Cookie: auth-token=5d6071b8e93644c987409f07937ed873
 	<!--BurpSuite will be helpful to modify HTTP requests in a way--!>
