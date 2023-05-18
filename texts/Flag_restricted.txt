@@ -1,0 +1,5 @@
+Associate diary 
+
+The webserver admin is among the clumsiest to ever exist. He uses a strong password but reuses it everywhere. 
+
+Flag: Bad password practices – 10 points
