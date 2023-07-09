@@ -1,0 +1,27 @@
+# file: .
+# owner: webadmin
+# group: webadmin
+user::rwx
+group::---
+other::---
+
+# file: known_hosts
+# owner: webadmin
+# group: webadmin
+user::rw-
+group::r--
+other::r--
+
+# file: id_rsa.pub
+# owner: webadmin
+# group: webadmin
+user::rw-
+group::r--
+other::r--
+
+# file: id_rsa
+# owner: webadmin
+# group: webadmin
+user::rw-
+group::---
+other::---
