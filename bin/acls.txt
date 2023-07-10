@@ -1,0 +1,27 @@
+# file: .
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+
+# file: base64_msg.sh
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+
+# file: full_scan.sh
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+
+# file: restricted.sh
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
