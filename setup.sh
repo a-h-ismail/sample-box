@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (C) 2023 Ahmad Ismail
+# SPDX-License-Identifier: MPL-2.0
 if [ $EUID -ne 0 ]; then
     echo "You must run this as root, try with sudo."
     exit 1
@@ -14,6 +16,9 @@ function exit_on_fail {
     fi
 }
 
+# cd to the base directory of the script
+cd "${0%/*}"
+
 system_type=$(get_section System)
 add_packages=$(get_section 'Add Packages')
 remove_packages=$(get_section 'Remove Packages')
@@ -25,7 +30,7 @@ pre_script=$(get_section Pre)
 post_script=$(get_section Post)
 post_package_install=$(get_section 'Post Packages')
 
-if [ -n "$add_packages" ] && [ -n "$req_flatpacks" ]; then
+if [ -n "$add_packages" ] || [ -n "$req_flatpacks" ]; then
     echo "Checking network connectivity..."
     ping -c 4 8.8.8.8 &> /dev/null
     if [ $? -ne 0 ]; then
@@ -83,7 +88,7 @@ fi
 
 # Copy the files to the given locations
 if [ -n "$files_mapping" ]; then
-    echo "Copying files..."
+    echo -e "\nCopying files..."
     # Extract the source/destination pairs
     for i in $(seq 1 $(echo "$files_mapping" | wc -l)); do
         # Get source and destination paths by splitting each line at the ':' delimiter
@@ -135,7 +140,7 @@ fi
 
 # Enable user units
 if [ -n "$all_users_units" ]; then
-    echo "Enabling systemd user units..."
+    echo -e "\nEnabling systemd user units..."
     # Split username and units using awk
     for i in $(seq $(echo "$all_users_units" | wc -l)); do
         username=$(echo "$all_users_units" | awk -F ':' "NR == $i {print \$1}")
@@ -162,7 +167,7 @@ fi
 # Reload the service manager since units could be newly installed by the package manager
 # Far easier than the users one
 if [ -n "$system_units" ]; then
-    echo "Enabling systemd system units..."
+    echo -e "\nEnabling systemd system units..."
     systemctl daemon-reload
     systemctl enable --now $system_units
 fi
