@@ -83,16 +83,19 @@ fi
 
 # Copy the files to the given locations
 if [ -n "$files_mapping" ]; then
+    echo "Copying files..."
     # Extract the source/destination pairs
     for i in $(seq 1 $(echo "$files_mapping" | wc -l)); do
         # Get source and destination paths by splitting each line at the ':' delimiter
         # May get confused if the filename has : in it, should mitigate that
-        source=$(echo "$files_mapping" | awk -F ':' "NR == $i { printf \"%s\", \$1 }")
-        destination=$(echo "$files_mapping" | awk -F ':' "NR == $i { printf \"%s\", \$2 }")
+        source=$(echo "$files_mapping" | awk -F ':' "NR == $i { printf \"%s\", \$1; exit }")
+        destination=$(echo "$files_mapping" | awk -F ':' "NR == $i { printf \"%s\", \$2; exit }")
+        # Clear it up from the previous iteration
+        unset new_name
         mkdir -p "$destination"
         # Case of source being a directory
         if [ -d "$source" ]; then
-            cp -r "$source"/. "$destination"
+            cp -rf "$source"/. "$destination"
             # If an ACL file exists, restore the ACLs to the destination and delete the file
             if [ -e "$source/acls.txt" ]; then
                 tmp="$PWD"
@@ -104,24 +107,35 @@ if [ -n "$files_mapping" ]; then
         # Case of a file as source, the desired ACLs should be in the same directory as the file
         elif [ -f "$source" ]; then
             source_dir=$(dirname "$source")
+
+            # Get the new name as indicated in the config
+            new_name=$(echo "$files_mapping" | awk -F ':' "NR == $i { printf \"%s\", \$3; exit }")
+            if [ -n "$new_name" ] && [ -d "$destination/$new_name" ]; then
+                echo "Error, the requested filename is already taken by a directory: $destination/$new_name"
+                continue
+            fi
+
             if [ -e "$source_dir/acls.txt" ]; then
                 original_acl=$(getfacl "$source")
                 # Get the desired ACL and set it, then copy while preserving attributes.
                 awk -v "file=$source" -f isolate_acl.awk "$source_dir/acls.txt" | setfacl --set-file=- "$source"
-                cp -a "$source" "$destination"
+                cp -af "$source" "$destination/$new_name"
                 # Restore the original ACL of the file
                 echo "$original_acl" | setfacl --set-file=- "$source"
             else
-                cp "$source" "$destination"
+                cp -f "$source" "$destination/$new_name"
             fi
         fi
         # Restore SELinux labels
         restorecon -R "$destination" 2> /dev/null
+        # Some feedback
+        echo "$source -> $destination/$new_name"
     done
 fi
 
 # Enable user units
 if [ -n "$all_users_units" ]; then
+    echo "Enabling systemd user units..."
     # Split username and units using awk
     for i in $(seq $(echo "$all_users_units" | wc -l)); do
         username=$(echo "$all_users_units" | awk -F ':' "NR == $i {print \$1}")
@@ -148,6 +162,7 @@ fi
 # Reload the service manager since units could be newly installed by the package manager
 # Far easier than the users one
 if [ -n "$system_units" ]; then
+    echo "Enabling systemd system units..."
     systemctl daemon-reload
     systemctl enable --now $system_units
 fi
