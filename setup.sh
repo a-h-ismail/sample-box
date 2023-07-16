@@ -10,12 +10,6 @@ function get_section {
     awk -v "section=[$1]" -f get_configuration.awk auto-setup.conf
 }
 
-function exit_on_fail {
-    if [ $1 -ne 0 ]; then
-        exit 1
-    fi
-}
-
 # cd to the base directory of the script
 cd "${0%/*}"
 
@@ -44,42 +38,38 @@ if [ -n "$pre_script" ]; then
     ./"$pre_script" "$system_type"
 fi
 
+# Exit on error
+set -e
 # Install/Remove packages depending on your system type
 if [ -n "$system_type" ]; then
     # Fedora and derivatives
     if [ "$system_type" == "rpm" ]; then
         dnf install $add_packages -y
-
-        if [ -n "$req_flatpacks" ]; then
-            dnf install flatpak
-        fi
-
         dnf remove $remove_packages -y &&\
         dnf upgrade -y
-        exit_on_fail $?
     fi
     # Debian/Ubuntu derivatives
     if [ "$system_type" == "deb" ]; then
-        apt-get update &&\
+        apt-get update
         apt-get install $add_packages -y
-        exit_on_fail $?
-
-        if [ -n "$req_flatpacks" ]; then
-            apt-get install flatpak -y
-        fi
-
         apt-get remove --purge $remove_packages -y &&\
         apt-get autoremove -y &&\
         apt-get upgrade -y
-        exit_on_fail $?
     fi
 fi
 
 # Install Flatpaks
 if [ -n "$req_flatpacks" ]; then
+    if [ "$system_type" == "rpm" ]; then
+        dnf install flatpak -y
+    elif [ "$system_type" == "deb" ]; then
+        apt-get update && apt-get install flatpak -y
+    fi
+
     flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     flatpak install $req_flatpacks -y
 fi
+set +e
 
 # Execute post package install script
 if [ -n "$post_package_install" ]; then
@@ -145,9 +135,9 @@ if [ -n "$all_users_units" ]; then
     for i in $(seq $(echo "$all_users_units" | wc -l)); do
         username=$(echo "$all_users_units" | awk -F ':' "NR == $i {print \$1}")
         user_units=$(echo "$all_users_units" | awk -F ':' "NR == $i {print \$2}")
-
+        user_home=$(grep "$username" -w /etc/passwd | cut -f 6 -d :)
         for user_unit in $user_units; do
-            unit_target=$(grep 'WantedBy=' "$user_unit" | cut -f 2 -d =)
+            unit_target=$(grep 'WantedBy=' "$user_home/.config/systemd/user/$user_unit" | cut -f 2 -d =)
 
             # Default case
             if [ -z "$unit_target" ]; then
@@ -156,8 +146,8 @@ if [ -n "$all_users_units" ]; then
 
             # Manually link units to their target since running systemctl --user from root is relatively hard.
             # machinectl is not always available on the host, neither systemd 248+
-            su - "$username" -c "mkdir -p \"\$HOME/.config/systemd/user/$unit_target.wants\"
-            ln -s \"\$HOME/.config/systemd/user/$user_unit\" \"\$HOME/.config/systemd/user/$unit_target.wants/$user_unit\""
+            su - "$username" -c "mkdir -p \"$user_home/.config/systemd/user/$unit_target.wants\"
+            ln -s \"$user_home/.config/systemd/user/$user_unit\" \"$user_home/.config/systemd/user/$unit_target.wants/$user_unit\""
         done
     done
     echo 'Warning, you need to reload affected users systemd service managers for changes to take effect.'
