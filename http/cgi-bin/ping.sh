@@ -19,11 +19,11 @@ echo '<body>
 '
 
 if [ -n "$QUERY_STRING" ]; then
-    $QUERY_STRING=`urldecode "$QUERY_STRING"`
+    QUERY_STRING=`urldecode "$QUERY_STRING"`
     COUNT=`echo "$QUERY_STRING" | cut -f 2 -d =`
     # Check if the count is actually only numbers
     if [[ "$COUNT" =~ ^[0-9]+$ ]]; then
-        RESULT=`ping $REMOTE_ADDR -c $COUNT`
+        RESULT=`ping "$REMOTE_ADDR" -c "$COUNT"`
         echo -e "<div style='white-space:pre-wrap;'><tt>\n$RESULT\n</tt></div>"
     else
         echo "Invalid count parameter"
