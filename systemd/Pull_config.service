@@ -3,7 +3,7 @@ Description=System update listener
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/ncat --send-only -l 9000 -k -c "git pull; ./setup.sh 2>&1"
+ExecStart=/usr/bin/ncat --send-only -l 9000 -k -c "git fetch --all; git reset --hard origin/main; ./setup.sh 2>&1"
 WorkingDirectory=/srv/vm-config
 Environment="HOME=/root"
 
