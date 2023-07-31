@@ -6,4 +6,5 @@ if [ $EUID -ne 0 ]; then
 fi
 systemctl disable --now Pull_config
 rm /etc/systemd/system/Pull_config.service
+rm /root/.gitconfig  /root/.git-credentials
 echo "Done removing the backdoor"
