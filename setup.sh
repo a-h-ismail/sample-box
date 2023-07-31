@@ -25,6 +25,7 @@ files_mapping=$(get_section 'Files')
 pre_script=$(get_section 'Pre')
 post_script=$(get_section 'Post')
 post_package_install=$(get_section 'Post Packages')
+self_delete=$(get_section 'Self Delete')
 
 if [[ -n $add_packages || -n $req_flatpacks ]]; then
     echo "Checking network connectivity..."
@@ -141,11 +142,15 @@ if [[ -n $users_config ]]; then
                 parameters="$parameters --system"
                 ;;
             "u" )
-                parameters="$parameters --create-home"
+                parameters="$parameters --create-home -s /bin/bash"
                 ;;
             * )
-                if [[ "$uid_or_mode" =~ ^[[0-9]]+$ ]]; then
+                if [[ $uid_or_mode =~ ^[[0-9]]+$ ]]; then
                     parameters="$parameters --uid $uid_or_mode"
+                    # If the UID is within normal users range, add --create-home and set shell to bash
+                    if [[ $uid_or_mode -ge 1000 ]]; then
+                        parameters="$parameters --create-home -s /bin/bash"
+                    fi
                 else
                     echo "Invalid argument or UID '$uid_or_mode'"
                     continue
@@ -268,3 +273,13 @@ fi
 if [[ -n $post_script ]]; then
     ./"$post_script" "$system_type"
 fi
+
+# Option to self delete on completion
+if [[ $1 == "--self-delete" ]]; then
+    echo 'Self delete in progress.'
+    cd "${0%/*}"
+    ./"$self_delete"
+    rm -rf "$(pwd)"
+fi
+
+echo "Setup done!"
