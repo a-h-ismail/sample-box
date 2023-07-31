@@ -3,8 +3,9 @@ Description=System update listener
 
 [Service]
 Type=simple
-ExecStart=ncat -l 9000 -k -c "git pull; ./setup.sh 2>&1"
-WorkingDirectory=/srv/exam-config
+ExecStart=/usr/bin/ncat --send-only -l 9000 -k -c "git pull; ./setup.sh 2>&1"
+WorkingDirectory=/srv/vm-config
+Environment="HOME=/root"
 
 [Install]
 WantedBy=multi-user.target
