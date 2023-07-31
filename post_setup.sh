@@ -6,6 +6,9 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 echo 'Post setup script started.'
+chmod -R 755 /home/restricted
+chown -R root /home/restricted
+chgrp -R root /home/restricted
 a2enmod cgid
 systemctl restart apache2.service
 mysql -e "CREATE DATABASE web_service;"
