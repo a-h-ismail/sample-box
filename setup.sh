@@ -120,7 +120,7 @@ if [[ -n $groups_config ]]; then
 fi
 
 if [[ -n $users_config ]]; then
-    # Format: username:uid_or_mode:hash:force?
+    # Format: username:uid_or_mode:group1,group2...:hash:force?
     # Count the number of lines in the config to know the number of iterations
     for i in seq 1 $(echo "$users_config" | wc -l); do
         user_entry=$(echo "$users_config" | awk "NR == $i {print \$0}")
@@ -160,7 +160,7 @@ if [[ -n $users_config ]]; then
 
         # Add the password hash
         if [[ -n $hash ]]; then
-            parameters="$parameters --password '$hash'"
+            parameters="$parameters --password $hash"
         fi
 
         # Check if force add was set
