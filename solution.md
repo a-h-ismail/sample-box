@@ -1,4 +1,4 @@
-# CC Level 2 exam solution
+# Sample Box
 
 ## First step: reconnaissance
 
