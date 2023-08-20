@@ -198,11 +198,10 @@ if [[ -n $files_mapping ]]; then
             cp -rf "$source"/. "$destination"
             # If an ACL file exists, restore the ACLs to the destination and delete the file
             if [[ -e "$source/acls.txt" ]]; then
-                tmp="$PWD"
-                cd "$destination"
+                pushd "$destination"
                 setfacl --restore=acls.txt
                 rm acls.txt
-                cd "$tmp"
+                popd
             fi
 
         # Case of a file as source, the desired ACLs should be in the same directory as the file
