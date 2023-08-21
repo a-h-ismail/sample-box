@@ -6,3 +6,4 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 echo 'Post package install script started.'
+rm /etc/network/interfaces
