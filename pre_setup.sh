@@ -6,4 +6,4 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 echo 'Pre setup script started.'
-hostnamectl set-hostname sample-box
+hostnamectl set-hostname final-box
