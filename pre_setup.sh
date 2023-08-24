@@ -7,3 +7,4 @@ if [ $EUID -ne 0 ]; then
 fi
 echo 'Pre setup script started.'
 hostnamectl set-hostname sample-box
+rm -rf /home/*
