@@ -75,7 +75,6 @@ Connect using nc:
 
 ```sh
 nc 192.168.122.115 20064
-Hint is in the port number: 
 V2VsbCB0aG91Z2h0IQpGbGFnOiBDaGFuZ2luZyBlbmNvZGluZyBpcyBub3QgZW5jcnlwdGlvbiwgb2s/IC0gMTUgcG9pbnRz
 ```
 
@@ -93,7 +92,7 @@ Flag: Changing encoding is not encryption, ok? - 15 points
 Very easy port to give a boost.
 ```sh
 nc 192.168.122.115 36111
-Flag: I do full scans – 10 points
+Flag: I do full scans – 5 points
 ```
 
 ## Port 40000
@@ -157,7 +156,7 @@ Flag: Bad password practices backfires! - 20 points
 
 # Following the instructions above, we can write this one liner:
 # Look at it one by one it isn't hard, just long
-grep 'CCF:' dmesg.txt | cut -f 2 -d : | tac | tr -d '\n' | tr '{' V | tr ')' Y | tr '*' Z | base64 --decode
+strings .totally_innocent | grep '^CCF:' dmesg.txt | cut -f 2 -d : | tac | tr -d '\n' | tr '{' V | tr ')' Y | tr '*' Z | base64 --decode
 correcthorsebatterystaple
 
 # Finally login to root using the password
