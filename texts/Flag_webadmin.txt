@@ -1,13 +1,11 @@
-The server admin granted me root access using the SSH public key in my home.
+The server admin granted me some extra privileges using an alternative user. I can su into it with a password.
 Just in case I forget the password, I made this super secure recovery procedure:
 
-The file dmesg.txt is hiding my password in a fragmented form as follows:
-- Each fragment is stored in a line starting with "CCF:"
+A file somewhere can be used to reconstruct the password.
+- Each fragment is stored in a line strating with "CCF:"
 - A total of 5 fragments exist
 - Get each fragment and reverse their order (example frag3,frag2,frag1 becomes frag1,frag2,frag3)
 - Replace '{' with 'V', ')' with 'Y' and '*' with 'Z'
 - base64 decode the string -> get password
-
-Hint: Use grep, cut, tac, tr, base64 commands
 
 Flag: Bad password practices backfires! - 20 points
