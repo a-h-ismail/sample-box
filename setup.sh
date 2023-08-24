@@ -81,7 +81,7 @@ fi
 
 
 if [[ -n $groups_config ]]; then
-    for i in seq 1 $(echo "$groups_config" | wc -l); do
+    for i in $(seq 1 $(echo "$groups_config" | wc -l)); do
         group_entry=$(echo "$groups_config" | awk "NR == $i {print \$0}")
 
         groupname=$(echo "$group_entry" | cut -f 1 -d :)
@@ -122,7 +122,7 @@ fi
 if [[ -n $users_config ]]; then
     # Format: username:uid_or_mode:group1,group2...:hash:force?
     # Count the number of lines in the config to know the number of iterations
-    for i in seq 1 $(echo "$users_config" | wc -l); do
+    for i in $(seq 1 $(echo "$users_config" | wc -l)); do
         user_entry=$(echo "$users_config" | awk "NR == $i {print \$0}")
         username=$(echo "$user_entry" | cut -f 1 -d :)
         uid_or_mode=$(echo "$user_entry" | cut -f 2 -d :)
