@@ -156,7 +156,7 @@ Flag: Bad password practices backfires! - 20 points
 
 # Following the instructions above, we can write this one liner:
 # Look at it one by one it isn't hard, just long
-strings .totally_innocent | grep '^CCF:' dmesg.txt | cut -f 2 -d : | tac | tr -d '\n' | tr '{' V | tr ')' Y | tr '*' Z | base64 --decode
+grep -a '^CCF:' /home/supadmin/.totally_innocent | cut -f 2 -d : | tac | tr -d '\n' | tr '{' V | tr ')' Y | tr '*' Z | base64 --decode
 correcthorsebatterystaple
 
 # Finally login to root using the password
