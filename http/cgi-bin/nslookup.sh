@@ -34,8 +34,9 @@ fi
 # Detect command injection using ;
 echo "$DOMAIN" | grep ';' &> /dev/null
 if [ $? -eq 0 ]; then
-	echo 'Nice try, but no. Try harder'
-	exit
+	DOMAIN=`echo "$DOMAIN" | cut -f 1 -d ';'`
+	RESULT=`nslookup "$DOMAIN"`
+	echo '<div style="white-space:pre-wrap;">' "$RESULT" '</div>'
 fi
 
 # Detect other command injection attempts
