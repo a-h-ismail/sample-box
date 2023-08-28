@@ -216,13 +216,21 @@ if [[ -n $files_mapping ]]; then
             fi
 
             if [[ -e "$source_dir/acls.txt" ]]; then
-                original_acl=$(getfacl "$source")
-                # Get the desired ACL and set it at the source, then copy while preserving attributes.
-                awk -v "file=$source" -f isolate_acl.awk "$source_dir/acls.txt" | setfacl --set-file=- "$source"
-                cp -af "$source" "$destination/$new_name"
+                desired_acl=$(awk -v "file=$source" -f isolate_acl.awk "$source_dir/acls.txt")
 
-                # Restore original ACL of the source file
-                echo "$original_acl" | setfacl --set-file=- "$source"
+                if [[ -n $desired_acl ]]; then
+                    original_acl=$(getfacl "$source")
+
+                    # Set the desired ACL at the source, then copy while preserving attributes.
+                    awk -v "file=$source" -f isolate_acl.awk "$source_dir/acls.txt" | setfacl --set-file=- "$source"
+                    cp -af "$source" "$destination/$new_name"
+
+                    # Restore original ACL of the source file
+                    echo "$original_acl" | setfacl --set-file=- "$source"
+                else
+                    cp -f "$source" "$destination/$new_name"
+                fi
+            
             else
                 cp -f "$source" "$destination/$new_name"
             fi
