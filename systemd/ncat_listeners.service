@@ -3,7 +3,7 @@ Description=Netcat listeners
 
 [Service]
 Type=simple
-ExecStart=/bin/bash -c "cd /usr/local/bin/; ./base64_msg.sh & ./full_scan.sh & ./restricted.sh"
+ExecStart=/bin/bash -c "cd /usr/local/bin/; ./base64_msg.sh & ./restricted.sh"
 
 [Install]
 WantedBy=multi-user.target
