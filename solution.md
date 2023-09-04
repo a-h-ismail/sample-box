@@ -85,14 +85,6 @@ Well thought!
 Flag: Changing encoding is not encryption, ok? - 15 points
 ```
 
-## Port 36111
-
-Very easy port to give a small boost.
-```sh
-nc 192.168.122.115 36111
-Flag: I do full scans – 5 points
-```
-
 ## Port 40000
 
 A reverse shell (sandboxed with firejail)
@@ -197,7 +189,6 @@ Flags:9 (145 points)
 
 - Flag: Off to a good start! - 10 points (SMB anonymous login)
 - Flag: Changing encoding is not encryption, ok? - 15 points (decode base64 on port 20064)
-- Flag: I do full scans – 5 points (port 36111)
 - Flag: Bad password practices – 10 points (reverse shell on port 40000)
 - Flag: Deja vu - 10 points (in robots.txt)
 - Flag: Command injection attempted - 20 points (trying command injection on nslookup tool)
