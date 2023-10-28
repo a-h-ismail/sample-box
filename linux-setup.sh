@@ -1,31 +1,65 @@
 #!/bin/bash
 # Copyright (C) 2023 Ahmad Ismail
 # SPDX-License-Identifier: MPL-2.0
+
+function get_section {
+    awk -v "section=[$1]" -f get_configuration.awk linux-setup.conf
+}
+
+# Copy command line arguments to a variable (so that the function below can access them)
+args=("$@")
+
+function arg_exists {
+    for i in "${args[@]}"; do
+        if [[ $1 == "$i" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+if arg_exists "--help"; then
+    echo 'Usage: ./linux-setup.sh [OPTIONS]
+    
+    --no-package-install     Skip package installation and upgrade step
+    --no-package-remove      Skip package removal
+    --no-flatpak             Skip Flatpak installation
+    --no-useradd             Skip user add/modify
+    --no-groupadd            Skip group add/modify
+    --no-user-units          Skip systemd user(s) units installation
+    --no-system-units        Skip systemd system units installation
+    --no-file-copy           Skip file and directory copy step
+    --no-preinst             Skip preinstall script
+    --no-postinst            Skip postinstall script
+    --no-post-package        Skip post package install script
+
+    Other options:
+
+    --self-delete            Remove the setup directory after executing the self delete script
+    --help                   Print this help prompt'
+    exit
+fi
+
 if [ $EUID -ne 0 ]; then
     echo "You must run this as root, try with sudo."
     exit 1
 fi
 
-function get_section {
-    awk -v "section=[$1]" -f get_configuration.awk auto-setup.conf
-}
-
 # cd to the base directory of the script
 cd "${0%/*}"
-
 system_type=$(get_section 'System')
-add_packages=$(get_section 'Add Packages')
+add_packages=$(! arg_exists "--no-package-install" && get_section 'Add Packages')
 remove_packages=$(get_section 'Remove Packages')
-req_flatpacks=$(get_section 'Flatpak')
-users_config=$(get_section 'Users')
-groups_config=$(get_section 'Groups')
-system_units=$(get_section 'System Units')
-all_users_units=$(get_section 'User Units')
-files_mapping=$(get_section 'Files')
-pre_script=$(get_section 'Pre')
-post_script=$(get_section 'Post')
-post_package_install=$(get_section 'Post Packages')
-self_delete=$(get_section 'Self Delete')
+req_flatpacks=$(! arg_exists "--no-flatpak" && get_section 'Flatpak')
+users_config=$(! arg_exists "--no-useradd" && get_section 'Users')
+groups_config=$(! arg_exists "--no-groupadd" && get_section 'Groups')
+system_units=$(! arg_exists "--no-system-units" && get_section 'System Units')
+all_users_units=$(! arg_exists "--no-user-units" && get_section 'User Units')
+files_mapping=$(! arg_exists "--no-file-copy" && get_section 'Files')
+pre_script=$(! arg_exists "--no-preinst" && get_section 'Pre')
+post_script=$(! arg_exists "" && get_section 'Post')
+post_package_install=$(! arg_exists "" && get_section 'Post Packages')
+self_delete=$(! arg_exists "--no-self-delete" && get_section 'Self Delete')
 
 if [[ -n $add_packages || -n $req_flatpacks ]]; then
     echo "Checking network connectivity..."
@@ -81,7 +115,7 @@ fi
 
 
 if [[ -n $groups_config ]]; then
-    for i in $(seq 1 $(echo "$groups_config" | wc -l)); do
+    for i in $(seq 1 "$(echo "$groups_config" | wc -l)"); do
         group_entry=$(echo "$groups_config" | awk "NR == $i {print \$0}")
 
         groupname=$(echo "$group_entry" | cut -f 1 -d :)
@@ -92,18 +126,18 @@ if [[ -n $groups_config ]]; then
             echo "Missing group name field in $group_entry"
             continue
         else
-            parameters="$groupname"
+            parameters=("$groupname")
         fi
         case "$gid_or_mode" in
             "s" )
-                parameters="$parameters --system"
+                parameters+=(--system)
                 ;;
             "u" )
                 true
                 ;;
             * )
                 if [[ $gid_or_mode =~ ^[[0-9]]+$ ]]; then
-                    parameters="$parameters --gid $gid_or_mode"
+                    parameters+=(--gid "$gid_or_mode")
                 else
                     echo "Invalid argument or GID '$gid_or_mode'"
                     continue
@@ -115,14 +149,14 @@ if [[ -n $groups_config ]]; then
             groupdel -f "$groupname"
         fi
 
-        groupadd $parameters
+        groupadd "${parameters[@]}"
     done
 fi
 
 if [[ -n $users_config ]]; then
     # Format: username:uid_or_mode:group1,group2...:hash:force?
     # Count the number of lines in the config to know the number of iterations
-    for i in $(seq 1 $(echo "$users_config" | wc -l)); do
+    for i in $(seq 1 "$(echo "$users_config" | wc -l)"); do
         user_entry=$(echo "$users_config" | awk "NR == $i {print \$0}")
         username=$(echo "$user_entry" | cut -f 1 -d :)
         uid_or_mode=$(echo "$user_entry" | cut -f 2 -d :)
@@ -134,22 +168,22 @@ if [[ -n $users_config ]]; then
             echo "Missing username field in $user_entry"
             continue
         else
-            parameters="$username"
+            parameters=("$username")
         fi
 
         case "$uid_or_mode" in
             "s" )
-                parameters="$parameters --system"
+                parameters+=(--system)
                 ;;
             "u" )
-                parameters="$parameters --create-home -s /bin/bash"
+                parameters+=(--create-home -s /bin/bash)
                 ;;
             * )
                 if [[ $uid_or_mode =~ ^[[0-9]]+$ ]]; then
-                    parameters="$parameters --uid $uid_or_mode"
+                    parameters+=(--uid "$uid_or_mode")
                     # If the UID is within normal users range, add --create-home and set shell to bash
                     if [[ $uid_or_mode -ge 1000 ]]; then
-                        parameters="$parameters --create-home -s /bin/bash"
+                        parameters+=(--create-home -s /bin/bash)
                     fi
                 else
                     echo "Invalid argument or UID '$uid_or_mode'"
@@ -160,7 +194,7 @@ if [[ -n $users_config ]]; then
 
         # Add the password hash
         if [[ -n $hash ]]; then
-            parameters="$parameters --password $hash"
+            parameters+=(--password "$hash")
         fi
 
         # Check if force add was set
@@ -168,10 +202,10 @@ if [[ -n $users_config ]]; then
             userdel -f "$username"
         fi
 
-        useradd $parameters
+        useradd "${parameters[@]}"
         
         if [[ -n $append_groups ]]; then
-            usermod -aG $append_groups "$username"
+            usermod -aG "$append_groups" "$username"
         fi
     done
 fi
@@ -180,7 +214,7 @@ fi
 if [[ -n $files_mapping ]]; then
     echo -e "\nCopying files..."
     # Extract the source/destination pairs
-    for i in $(seq 1 $(echo "$files_mapping" | wc -l)); do
+    for i in $(seq 1 "$(echo "$files_mapping" | wc -l)"); do
         # Get source and destination paths by splitting each line at the ':' delimiter
         # May get confused if the filename has : in it, should mitigate that
         # Isolate line number $i
@@ -220,7 +254,6 @@ if [[ -n $files_mapping ]]; then
 
                 if [[ -n $desired_acl ]]; then
                     original_acl=$(getfacl "$source")
-
                     # Set the desired ACL at the source, then copy while preserving attributes.
                     awk -v "file=$source" -f isolate_acl.awk "$source_dir/acls.txt" | setfacl --set-file=- "$source"
                     cp -af "$source" "$destination/$new_name"
@@ -246,7 +279,7 @@ fi
 if [[ -n $all_users_units ]]; then
     echo -e "\nEnabling systemd user units..."
     # Split username and units using awk
-    for i in $(seq $(echo "$all_users_units" | wc -l)); do
+    for i in $(seq "$(echo "$all_users_units" | wc -l)"); do
         username=$(echo "$all_users_units" | awk -F ':' "NR == $i {print \$1}")
         user_units=$(echo "$all_users_units" | awk -F ':' "NR == $i {print \$2}")
         user_home=$(grep "$username" -w /etc/passwd | cut -f 6 -d :)
@@ -282,7 +315,7 @@ if [[ -n $post_script ]]; then
 fi
 
 # Option to self delete on completion
-if [[ $1 == "--self-delete" ]]; then
+if arg_exists "--self-delete"; then
     echo 'Self delete in progress.'
     cd "${0%/*}"
     ./"$self_delete"
