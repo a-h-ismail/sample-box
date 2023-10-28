@@ -49,7 +49,7 @@ fi
 cd "${0%/*}"
 system_type=$(get_section 'System')
 add_packages=$(! arg_exists "--no-package-install" && get_section 'Add Packages')
-remove_packages=$(get_section 'Remove Packages')
+remove_packages=$(! arg_exists "--no-package-remove" && get_section 'Remove Packages')
 req_flatpacks=$(! arg_exists "--no-flatpak" && get_section 'Flatpak')
 users_config=$(! arg_exists "--no-useradd" && get_section 'Users')
 groups_config=$(! arg_exists "--no-groupadd" && get_section 'Groups')
@@ -78,20 +78,29 @@ fi
 # Exit on error
 set -e
 # Install/Remove packages depending on your system type
-if [[ -n $system_type ]]; then
+if [[ -n $add_packages ]]; then
     # Fedora and derivatives
     if [[ $system_type == "rpm" ]]; then
         dnf install $add_packages -y
-        dnf remove $remove_packages -y
         dnf upgrade -y
     fi
     # Debian/Ubuntu derivatives
     if [[ $system_type == "deb" ]]; then
         apt-get update
         apt-get install $add_packages -y
-        apt-get remove --purge $remove_packages -y
-        apt-get autoremove -y
         apt-get upgrade -y
+    fi
+fi
+
+# Install/Remove packages depending on your system type
+if [[ -n $remove_packages ]]; then
+    # Fedora and derivatives
+    if [[ $system_type == "rpm" ]]; then
+        dnf remove $remove_packages -y
+    fi
+    # Debian/Ubuntu derivatives
+    if [[ $system_type == "deb" ]]; then
+        apt-get remove $remove_packages --autoremove -y
     fi
 fi
 
