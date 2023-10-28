@@ -1,0 +1,6 @@
+cgi-bin/login.sh
+cgi-bin/admin.sh
+
+There must be something there, right?
+
+Flag: A medium wordlist? - 10 points
