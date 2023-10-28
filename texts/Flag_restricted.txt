@@ -1,5 +1,6 @@
 Associate diary 
 
-The webserver admin is among the clumsiest to ever exist. He uses a strong password but reuses it everywhere. 
+The admin reuses his password everywhere, can't be bothered to use a password manager.
+It's a matter of time, this will cause us issues...
 
 Flag: Bad password practices – 10 points
