@@ -2,7 +2,7 @@
 function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 
 AUTHENTICATED="no"
-AUTH_TOKEN=`echo $HTTP_COOKIE | grep -w 'auth-token' | cut -f 2 -d =`
+AUTH_TOKEN=$(grep -w 'auth-token' <<< "$HTTP_COOKIE" | cut -f 2 -d =)
 
 # Check if the user is already authenticated
 # Hardcoding tokens is a terrible idea, which is the goal of a vulnerable VM, right?
@@ -18,11 +18,11 @@ else
 		# The first cut isolates the query parameter, grep makes sure we are getting the expected parameter, the last cut gets the value
 		# tr removes the trailing newline as it is messing the base64 encoding
 		# Encoding in base64 is an effective mitigation for SQL injection
-		USERNAME=`echo $QUERY | cut -f 1 -d \& | grep -w 'username' | cut -f 2 -d = | tr -d '\n' | base64`
-		PASS=`echo $QUERY | cut -f 2 -d \& | grep -w 'password' | cut -f 2 -d = | tr -d '\n' | base64`
+		USERNAME=$(cut -f 1 -d \& <<< "$QUERY" | grep -w 'username' | cut -z -f 2 -d = | base64)
+		PASS=$(cut -f 2 -d \& <<< "$QUERY" | grep -w 'password' | cut -z -f 2 -d = | base64)
 
-		RESULT=`/usr/bin/mysql -h localhost -u web_user -e "USE web_service;
-		SELECT username FROM creds WHERE username IN ( FROM_BASE64('$USERNAME') ) AND password IN ( FROM_BASE64('$PASS') ) LIMIT 1;"`
+		RESULT=$(/usr/bin/mysql -h localhost -u web_user -e "USE web_service;
+		SELECT username FROM creds WHERE username IN ( FROM_BASE64('$USERNAME') ) AND password IN ( FROM_BASE64('$PASS') ) LIMIT 1;")
 
 		if [ -n "$RESULT" ]; then
 			AUTHENTICATED="yes"
@@ -51,10 +51,10 @@ if [ "$AUTHENTICATED" = "yes" ]; then
 
 	# Sending the query using GET (POST is already used for authentication)
 	if [ "$REQUEST_METHOD" = "GET" ]; then
-		QUERY_STRING=`urldecode $QUERY_STRING`
-		ID=`echo "$QUERY_STRING" | grep -w 'id' | cut -f 2 -d =`
+		QUERY_STRING=$(urldecode "$QUERY_STRING")
+		ID=$(grep -w 'id' <<< "$QUERY_STRING" | cut -z -f 2 -d = | base64)
 		if [ -n "$ID" ]; then
-			RESULT=`/usr/bin/mysql -t -h localhost -u web_user -e "USE web_service; SELECT * FROM creds WHERE ID = $ID;"`
+			RESULT=$(/usr/bin/mysql -t -h localhost -u web_user -e "USE web_service; SELECT * FROM creds WHERE ID = ( FROM_BASE64('$ID') );")
 			if [ -n "$RESULT" ]; then
 				echo -e "<div style='white-space:pre-wrap;'><tt>\n$RESULT\n</tt></div>"
 			else
